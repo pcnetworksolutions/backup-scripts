@@ -8,6 +8,7 @@
 # Global Variables
 $instances = Get-ChildItem "SQLSERVER:\SQL\$(hostname)"
 $backup_folder = "C:\z-backups"
+$retention_period = New-Object -TypeName System.TimeSpan -ArgumentList 7,0,0,0  # Retention period for how long backups are to be kept, specified as days,hours,minutes,seconds in the -ArgumentList paramter
 
 # Functions
 #
@@ -17,6 +18,7 @@ function Backup-SqlDatabase-AsDatedFile ($server_instance, $database) {
     Backup-SqlDatabase -Database $database -ServerInstance "$server_instance.Name" -BackupAction Database -BackupFile "$backup_folder\$server_instance.InstanceName-$database-$(Get-Date -UFormat `"%Y-%m-%d-%H-%M`")"
 }
 
+# Backup all databases
 ForEach ($instance in $instances) {
     # Back up system DBs msdb, master, and model as refrenced in link below
     # https://docs.microsoft.com/en-us/previous-versions/sql/sql-server-2012/ms190190(v%3dsql.110) 
@@ -25,15 +27,19 @@ ForEach ($instance in $instances) {
     Backup-SqlDatabase-AsDatedFile($instance, "msdb")
     
     # Backup any instances DBs
-    Get-ChildItem "SQLSERVER:\SQL\$instance.Name" | ForEach-Object {
-        Backup-SqlDatabase-AsDatedFile(
+    ForEach ($database in Get-ChildItem "SQLSERVER:\SQL\$instance.Name") {
+        Backup-SqlDatabase-AsDatedFile($instance, $database)
     }
 }
+
+# Purge backups 
+Get-ChildItem -Path $backup_folder | Where-Object { $_.LastWriteTime -lt $(Get-Date).Subtract($retention_period) } | Remove-Item
 
 # Reference articles
 #
 # Back up full database in general, includes PowerShell snippet
 # https://docs.microsoft.com/en-us/previous-versions/sql/sql-server-2012/ms186289(v%3dsql.110)
+# https://docs.microsoft.com/en-us/previous-versions/sql/sql-server-2012/ms187510(v%3dsql.110)#using-powershell
 #
 # Backup-SqlDatabase help page
 # https://docs.microsoft.com/en-us/powershell/module/sqlserver/backup-sqldatabase?view=sqlserver-ps
@@ -44,3 +50,9 @@ ForEach ($instance in $instances) {
 # Info about get-childitem in the sqlps context
 # Fun fact: get-childitem -force is necessary to see system databases 
 # https://docs.microsoft.com/en-us/sql/powershell/navigate-sql-server-powershell-paths?view=sql-server-2014
+#
+# TimeSpan constructor
+# https://docs.microsoft.com/en-us/dotnet/api/system.timespan.-ctor?view=netframework-4.7.2#System_TimeSpan__ctor_System_Int32_System_Int32_System_Int32_System_Int32_
+#
+# DateTime subtract timespan
+# https://docs.microsoft.com/en-us/dotnet/api/system.datetime.subtract?view=netframework-4.7.2#System_DateTime_Subtract_System_TimeSpan_
