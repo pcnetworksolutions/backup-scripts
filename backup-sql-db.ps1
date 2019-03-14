@@ -33,7 +33,9 @@ ForEach ($instance in $instances) {
 }
 
 # Purge backups 
-Get-ChildItem -Path $backup_folder | Where-Object { $_.LastWriteTime -lt $(Get-Date).Subtract($retention_period) } | Remove-Item
+Get-ChildItem -Path $backup_folder | 
+    Where-Object { $_.LastWriteTime -lt $(Get-Date).Subtract($retention_period) } | 
+        Remove-Item
 
 # Reference articles
 #
