@@ -15,7 +15,7 @@ $retention_period = New-Object -TypeName System.TimeSpan -ArgumentList 7,0,0,0  
 # Backup-SqlDatabase-AsDatedFile
 # Creates backup files in a year-month-day-hour-minute format in the predefined backup folder
 function Backup-SqlDatabase-AsDatedFile ($ServerInstance, $database) {
-    Backup-SqlDatabase -Database $database -ServerInstance "$ServerInstance.Name" -BackupAction Database -BackupFile "$backup_folder\$($ServerInstance.InstanceName)-$database-$(Get-Date -UFormat `"%Y-%m-%d-%H-%M`")"
+    Backup-SqlDatabase -Database $database -ServerInstance $ServerInstance.Name -BackupAction Database -BackupFile "$backup_folder\$($ServerInstance.InstanceName)-$database-$(Get-Date -UFormat `"%Y-%m-%d-%H-%M`")" -Verbose
 }
 
 # Backup all databases
