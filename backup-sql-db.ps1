@@ -14,21 +14,21 @@ $retention_period = New-Object -TypeName System.TimeSpan -ArgumentList 7,0,0,0  
 #
 # Backup-SqlDatabase-AsDatedFile
 # Creates backup files in a year-month-day-hour-minute format in the predefined backup folder
-function Backup-SqlDatabase-AsDatedFile ($server_instance, $database) {
-    Backup-SqlDatabase -Database $database -ServerInstance "$server_instance.Name" -BackupAction Database -BackupFile "$backup_folder\$server_instance.InstanceName-$database-$(Get-Date -UFormat `"%Y-%m-%d-%H-%M`")"
+function Backup-SqlDatabase-AsDatedFile ($ServerInstance, $database) {
+    Backup-SqlDatabase -Database $database -ServerInstance "$ServerInstance.Name" -BackupAction Database -BackupFile "$backup_folder\$($ServerInstance.InstanceName)-$database-$(Get-Date -UFormat `"%Y-%m-%d-%H-%M`")"
 }
 
 # Backup all databases
 ForEach ($instance in $instances) {
     # Back up system DBs msdb, master, and model as refrenced in link below
     # https://docs.microsoft.com/en-us/previous-versions/sql/sql-server-2012/ms190190(v%3dsql.110) 
-    Backup-SqlDatabase-AsDatedFile($instance, "master")
-    Backup-SqlDatabase-AsDatedFile($instance, "model")
-    Backup-SqlDatabase-AsDatedFile($instance, "msdb")
+    Backup-SqlDatabase-AsDatedFile -ServerInstance $instance -Database "master"
+    Backup-SqlDatabase-AsDatedFile -ServerInstance $instance -Database "model"
+    Backup-SqlDatabase-AsDatedFile -ServerInstance $instance -Database "msdb"
     
     # Backup any instances DBs
     ForEach ($database in Get-ChildItem "SQLSERVER:\SQL\$instance.Name") {
-        Backup-SqlDatabase-AsDatedFile($instance, $database)
+        Backup-SqlDatabase-AsDatedFile -ServerInstance $instance -Database $database
     }
 }
 
