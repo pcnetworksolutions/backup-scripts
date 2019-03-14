@@ -27,8 +27,8 @@ ForEach ($instance in $instances) {
     Backup-SqlDatabase-AsDatedFile -ServerInstance $instance -Database "msdb"
     
     # Backup any instances DBs
-    ForEach ($database in Get-ChildItem "SQLSERVER:\SQL\$($instance.Name)") {
-        Backup-SqlDatabase-AsDatedFile -ServerInstance $instance -Database $database
+    ForEach ($database in Get-ChildItem "SQLSERVER:\SQL\$($instance.Name)\Databases") {
+        Backup-SqlDatabase-AsDatedFile -ServerInstance $instance -Database $database.Name
     }
 }
 
